@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { projectTypes } from "@/lib/data/contact";
 import { site } from "@/lib/site";
+import { Spinner } from "@/components/ui/Spinner";
 import {
   contactSchema,
   contactSchemaFull,
@@ -33,15 +34,6 @@ function ErrorText({ id, message }: { id: string; message?: string }) {
     <p id={id} className="font-mono text-[12px] text-accent-text">
       {message}
     </p>
-  );
-}
-
-function Spinner() {
-  return (
-    <span
-      aria-hidden
-      className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white motion-reduce:animate-none"
-    />
   );
 }
 

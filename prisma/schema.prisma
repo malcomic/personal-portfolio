@@ -27,3 +27,12 @@ model Message {
   @@index([status, createdAt])
   @@index([ipHash, createdAt])
 }
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  ipHash    String
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([ipHash, createdAt])
+}

@@ -1,8 +1,7 @@
-import { createHash } from "node:crypto";
 import { after, NextResponse, type NextRequest } from "next/server";
 import { getDb } from "@/lib/db";
 import { sendContactAlert } from "@/lib/email";
-import { getEnv } from "@/lib/env";
+import { clientIpHash } from "@/lib/ip";
 import { contactSchema, firstFieldErrors, type ContactResponse } from "@/lib/validation/contact";
 
 const RATE_LIMIT_MAX = 3;
@@ -10,11 +9,6 @@ const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
 function respond(body: ContactResponse, status: number) {
   return NextResponse.json(body, { status });
-}
-
-function clientIpHash(request: NextRequest) {
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || request.headers.get("x-real-ip") || "unknown";
-  return createHash("sha256").update(`${getEnv().IP_HASH_SALT}:${ip}`).digest("hex");
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +35,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const db = getDb();
-    const ipHash = clientIpHash(request);
+    const ipHash = clientIpHash(request.headers);
     const recent = await db.message.count({
       where: { ipHash, createdAt: { gte: new Date(Date.now() - RATE_LIMIT_WINDOW_MS) } },
     });

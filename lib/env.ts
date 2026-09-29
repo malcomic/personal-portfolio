@@ -7,6 +7,9 @@ const envSchema = z.object({
   CONTACT_FROM_EMAIL: z.string().min(1),
   CONTACT_TO_EMAIL: z.email(),
   IP_HASH_SALT: z.string().min(16),
+  ADMIN_EMAIL: z.email(),
+  ADMIN_PASSWORD_HASH: z.string().min(20),
+  SESSION_SECRET: z.string().min(32),
 });
 
 type Env = z.infer<typeof envSchema>;
