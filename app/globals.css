@@ -1,6 +1,22 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #0a0a0a;
+  --muted: #525252;
+  --accent: #dc2626;
+  --accent-hover: #b91c1c;
+  /* Darker red for small text: #ef4444 is below 4.5:1 contrast on the light backgrounds. */
+  --accent-text: #b91c1c;
+  --border: #e5e5e5;
+  --border-strong: #d4d4d4;
+  --hover-overlay: rgb(0 0 0 / 0.03);
+}
+
+.dark {
   --bg: #0a0a0a;
   --surface: #141414;
   --text: #e5e5e5;
@@ -11,6 +27,7 @@
   --accent-text: #ef4444;
   --border: #262626;
   --border-strong: #404040;
+  --hover-overlay: rgb(255 255 255 / 0.03);
 }
 
 @theme inline {
@@ -23,6 +40,7 @@
   --color-accent-text: var(--accent-text);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
+  --color-hover-overlay: var(--hover-overlay);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -31,8 +49,12 @@
 
 @layer base {
   html {
-    color-scheme: dark;
+    color-scheme: light;
     scroll-behavior: smooth;
+  }
+
+  html.dark {
+    color-scheme: dark;
   }
 
   body {
@@ -43,7 +65,7 @@
 
   ::selection {
     background: var(--accent);
-    color: var(--text);
+    color: #fff;
   }
 
   :focus-visible {

@@ -7,6 +7,7 @@ import { homeSectionIds, isActiveLink } from "@/lib/nav";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Wordmark } from "./Wordmark";
 import { MobileMenu } from "./MobileMenu";
+import { ThemeToggle } from "./ThemeToggle";
 import { useActiveSection } from "./useActiveSection";
 
 export function Nav() {
@@ -48,6 +49,7 @@ export function Nav() {
 
         <div className="flex items-center justify-end gap-4">
           <StatusBadge className="hidden md:flex" />
+          <ThemeToggle />
           <MobileMenu pathname={pathname} activeSection={activeSection} />
         </div>
       </div>

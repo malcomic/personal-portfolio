@@ -8,7 +8,7 @@ const base =
 
 const variants: Record<Variant, string> = {
   primary: "bg-accent text-white hover:bg-accent-hover",
-  secondary: "border border-border text-text hover:border-muted hover:bg-white/[0.03]",
+  secondary: "border border-border text-text hover:border-muted hover:bg-hover-overlay",
 };
 
 type CommonProps = {
