@@ -1,17 +1,26 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { projectTypes } from "@/lib/data/contact";
 import { site } from "@/lib/site";
+import {
+  contactSchema,
+  contactSchemaFull,
+  firstFieldErrors,
+  type ContactField,
+  type ContactFieldErrors,
+  type ContactResponse,
+} from "@/lib/validation/contact";
 
-type Field = "name" | "email" | "details";
-type Errors = Partial<Record<Field, string>>;
+type Status = "idle" | "submitting" | "success" | "error";
 
 type ContactFormProps = {
   variant?: "compact" | "full";
 };
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const FIELD_ORDER: ContactField[] = ["name", "email", "details"];
+
+const panelClasses = "flex flex-col gap-6 rounded-[4px] border border-border bg-surface p-6 md:p-12";
 
 const fieldClasses =
   "w-full rounded-[2px] border bg-bg px-4 text-[14px] text-text placeholder:text-muted transition-colors duration-200 focus:border-muted focus:outline-none aria-[invalid=true]:border-accent";
@@ -27,45 +36,120 @@ function ErrorText({ id, message }: { id: string; message?: string }) {
   );
 }
 
+function Spinner() {
+  return (
+    <span
+      aria-hidden
+      className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white motion-reduce:animate-none"
+    />
+  );
+}
+
+function EmailFallback() {
+  return (
+    <a href={`mailto:${site.email}`} className="text-text underline underline-offset-4 hover:text-accent-text">
+      {site.email}
+    </a>
+  );
+}
+
 export function ContactForm({ variant = "compact" }: ContactFormProps) {
-  const [errors, setErrors] = useState<Errors>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [errors, setErrors] = useState<ContactFieldErrors>({});
+  const [status, setStatus] = useState<Status>("idle");
+  const [formError, setFormError] = useState("");
+  const formRef = useRef<HTMLFormElement>(null);
+  const successRef = useRef<HTMLHeadingElement>(null);
   const full = variant === "full";
   const prefix = full ? "inquiry" : "contact";
+  const submitting = status === "submitting";
   const id = (field: string) => `${prefix}-${field}`;
-  const errorId = (field: Field) => `${prefix}-${field}-error`;
-  const invalidProps = (field: Field) => ({
+  const errorId = (field: ContactField) => `${prefix}-${field}-error`;
+  const invalidProps = (field: ContactField) => ({
     "aria-invalid": errors[field] ? true : undefined,
     "aria-describedby": errors[field] ? errorId(field) : undefined,
   });
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const name = String(data.get("name") ?? "").trim();
-    const email = String(data.get("email") ?? "").trim();
-    const details = String(data.get("details") ?? "").trim();
+  useEffect(() => {
+    if (status === "success") successRef.current?.focus();
+  }, [status]);
 
-    const nextErrors: Errors = {};
-    if (full && !name) nextErrors.name = "Enter your name.";
-    if (!email) nextErrors.email = "Enter your email address.";
-    else if (!EMAIL_PATTERN.test(email)) nextErrors.email = "Enter a valid email address, like name@domain.com.";
-    if (!details) nextErrors.details = "Tell me a little about your project.";
-
+  function showFieldErrors(nextErrors: ContactFieldErrors) {
     setErrors(nextErrors);
-    setSubmitted(Object.keys(nextErrors).length === 0);
+    const firstInvalid = FIELD_ORDER.find((field) => nextErrors[field]);
+    if (firstInvalid) formRef.current?.querySelector<HTMLElement>(`[name="${firstInvalid}"]`)?.focus();
+  }
 
-    const firstInvalid = Object.keys(nextErrors)[0];
-    if (firstInvalid) event.currentTarget.querySelector<HTMLElement>(`[name="${firstInvalid}"]`)?.focus();
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting) return;
+
+    const data = Object.fromEntries(new FormData(event.currentTarget)) as Record<string, string>;
+    const result = (full ? contactSchemaFull : contactSchema).safeParse(data);
+    setFormError("");
+    if (!result.success) {
+      showFieldErrors(firstFieldErrors(result.error));
+      return;
+    }
+    setErrors({});
+    setStatus("submitting");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...result.data, company: data.company }),
+      });
+      const body = (await response.json()) as ContactResponse;
+
+      if (body.ok) {
+        setStatus("success");
+        return;
+      }
+      if (body.fieldErrors && Object.keys(body.fieldErrors).length > 0) showFieldErrors(body.fieldErrors);
+      setFormError(body.error);
+      setStatus("error");
+    } catch {
+      setFormError("Something went wrong sending your message.");
+      setStatus("error");
+    }
+  }
+
+  if (status === "success") {
+    return (
+      <div className={panelClasses}>
+        <h3 ref={successRef} tabIndex={-1} className="font-display text-[24px] font-extrabold text-text focus:outline-none">
+          Message received.
+        </h3>
+        <p className="text-[15px] leading-[1.6] text-muted">
+          Thanks for reaching out. I&apos;ll reply to your email within 24 hours.
+        </p>
+        <div>
+          <button
+            type="button"
+            onClick={() => setStatus("idle")}
+            className="font-mono text-[13px] text-text underline underline-offset-4 transition-colors hover:text-accent-text"
+          >
+            Send another message
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <form
+      ref={formRef}
       noValidate
       onSubmit={handleSubmit}
       aria-label="Project inquiry"
-      className="flex flex-col gap-6 rounded-[4px] border border-border bg-surface p-6 md:p-12"
+      aria-busy={submitting}
+      className={panelClasses}
     >
+      <div aria-hidden className="absolute -left-[9999px] h-px w-px overflow-hidden">
+        <label htmlFor={id("company")}>Company</label>
+        <input id={id("company")} name="company" type="text" tabIndex={-1} autoComplete="off" />
+      </div>
+
       {full && (
         <div className="flex flex-col gap-2">
           <label htmlFor={id("name")} className={labelClasses}>
@@ -144,18 +228,16 @@ export function ContactForm({ variant = "compact" }: ContactFormProps) {
       <div>
         <button
           type="submit"
-          className="flex h-12 w-full items-center justify-center rounded-[2px] bg-accent text-[15px] font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-accent-hover active:scale-[0.98]"
+          disabled={submitting}
+          className="flex h-12 w-full items-center justify-center gap-3 rounded-[2px] bg-accent text-[15px] font-semibold text-white transition-[background-color,transform] duration-150 ease-out hover:bg-accent-hover active:scale-[0.98] disabled:cursor-wait disabled:opacity-80 disabled:active:scale-100"
         >
-          Send Inquiry
+          {submitting && <Spinner />}
+          {submitting ? "Sending..." : "Send Inquiry"}
         </button>
-        <div role="status">
-          {submitted && (
-            <p className="pt-4 font-mono text-[12px] leading-[1.6] text-muted">
-              Thanks! Online inquiries open soon. For now, email me directly at{" "}
-              <a href={`mailto:${site.email}`} className="text-text underline underline-offset-4 hover:text-accent-text">
-                {site.email}
-              </a>
-              .
+        <div role="status" aria-live="polite">
+          {formError && (
+            <p className="pt-4 font-mono text-[12px] leading-[1.6] text-accent-text">
+              {formError} You can also email me directly at <EmailFallback />.
             </p>
           )}
         </div>

@@ -1,0 +1,29 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MessageStatus {
+  NEW
+  REPLIED
+  ARCHIVED
+}
+
+model Message {
+  id          String        @id @default(cuid())
+  name        String?
+  email       String
+  projectType String?
+  details     String
+  status      MessageStatus @default(NEW)
+  ipHash      String?
+  createdAt   DateTime      @default(now())
+  repliedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([ipHash, createdAt])
+}
