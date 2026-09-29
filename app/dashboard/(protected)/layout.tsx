@@ -63,6 +63,9 @@ export default async function ProtectedLayout({ children }: LayoutProps<"/dashbo
               </DashboardNavLink>
             </li>
             <li>
+              <DashboardNavLink href="/dashboard/projects">Projects</DashboardNavLink>
+            </li>
+            <li>
               <a
                 href="/"
                 target="_blank"

@@ -38,3 +38,8 @@ export function getDatabaseUrl(): string {
   }
   return parsed.data;
 }
+
+export function getBlobToken(): string | undefined {
+  const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
+  return token ? token : undefined;
+}

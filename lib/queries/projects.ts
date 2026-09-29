@@ -4,7 +4,12 @@ import { getDb } from "@/lib/db";
 import { verifySession } from "@/lib/dal";
 import type { Project } from "@/lib/data/projects";
 import type { Project as ProjectRow } from "@/lib/generated/prisma/client";
-import { caseStudySchema, screenshotSchema } from "@/lib/validation/project";
+import {
+  caseStudySchema,
+  emptyProjectValues,
+  screenshotSchema,
+  type ProjectFormValues,
+} from "@/lib/validation/project";
 
 export function toProject(row: ProjectRow): Project | null {
   const listScreenshot = screenshotSchema.safeParse(row.listScreenshot);
@@ -68,3 +73,76 @@ export async function getProjectCount() {
   await verifySession();
   return getDb().project.count();
 }
+
+export type AdminProjectRow = {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  status: string;
+  featured: boolean;
+  published: boolean;
+  draft: boolean;
+  valid: boolean;
+  updatedAt: Date;
+};
+
+export async function listProjectsForAdmin(): Promise<AdminProjectRow[]> {
+  await verifySession();
+  const rows = await getDb().project.findMany({
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+  return rows.map((row) => {
+    const caseStudy = caseStudySchema.safeParse(row.caseStudy);
+    const valid = caseStudy.success && screenshotSchema.safeParse(row.listScreenshot).success;
+    return {
+      id: row.id,
+      slug: row.slug,
+      title: row.title,
+      subtitle: row.subtitle,
+      status: row.status,
+      featured: row.featured,
+      published: row.published,
+      draft: caseStudy.success ? caseStudy.data.draft : true,
+      valid,
+      updatedAt: row.updatedAt,
+    };
+  });
+}
+
+export type ProjectForEdit = {
+  id: string;
+  values: ProjectFormValues;
+  invalidStoredData: boolean;
+};
+
+export const getProjectForEdit = cache(async (id: string): Promise<ProjectForEdit | null> => {
+  await verifySession();
+  const row = await getDb().project.findUnique({ where: { id } });
+  if (!row) return null;
+
+  const defaults = emptyProjectValues();
+  const listScreenshot = screenshotSchema.safeParse(row.listScreenshot);
+  const caseStudy = caseStudySchema.safeParse(row.caseStudy);
+
+  return {
+    id: row.id,
+    invalidStoredData: !listScreenshot.success || !caseStudy.success,
+    values: {
+      title: row.title,
+      slug: row.slug,
+      subtitle: row.subtitle,
+      status: row.status,
+      description: row.description,
+      listDescription: row.listDescription,
+      features: row.features.length > 0 ? row.features : defaults.features,
+      tags: row.tags,
+      liveUrl: row.liveUrl ?? "",
+      repoUrl: row.repoUrl ?? "",
+      featured: row.featured,
+      published: row.published,
+      listScreenshot: listScreenshot.success ? listScreenshot.data : defaults.listScreenshot,
+      caseStudy: caseStudy.success ? caseStudy.data : defaults.caseStudy,
+    },
+  };
+});

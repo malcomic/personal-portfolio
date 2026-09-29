@@ -42,7 +42,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="NEW MESSAGES" value={counts.NEW} href="/dashboard/messages?status=NEW" />
         <StatCard label="TOTAL MESSAGES" value={counts.ALL} href="/dashboard/messages?status=ALL" />
-        <StatCard label="PROJECTS" value={projectCount} />
+        <StatCard label="PROJECTS" value={projectCount} href="/dashboard/projects" />
       </div>
 
       <section aria-labelledby="latest-heading" className="flex flex-col gap-4">

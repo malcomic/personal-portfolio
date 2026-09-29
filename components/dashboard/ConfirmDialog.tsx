@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ActionButton } from "./ActionButton";
 
 type ConfirmDialogProps = {
@@ -15,6 +15,7 @@ type ConfirmDialogProps = {
 
 export function ConfirmDialog({ open, title, children, confirmLabel, pending = false, onConfirm, onClose }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -26,7 +27,7 @@ export function ConfirmDialog({ open, title, children, confirmLabel, pending = f
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby="confirm-dialog-title"
+      aria-labelledby={titleId}
       onClose={onClose}
       onCancel={(event) => {
         if (pending) event.preventDefault();
@@ -34,7 +35,7 @@ export function ConfirmDialog({ open, title, children, confirmLabel, pending = f
       className="m-auto w-[min(440px,calc(100%-40px))] rounded-[4px] border border-border bg-surface p-6 text-text backdrop:bg-black/60"
     >
       <div className="flex flex-col gap-4">
-        <h2 id="confirm-dialog-title" className="font-display text-[20px] font-extrabold">
+        <h2 id={titleId} className="font-display text-[20px] font-extrabold">
           {title}
         </h2>
         <div className="text-[14px] leading-[1.6] text-muted">{children}</div>
