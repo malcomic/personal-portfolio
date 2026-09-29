@@ -1,10 +1,10 @@
 "use server";
 
-import { createHash, timingSafeEqual } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { safeEqual } from "@/lib/crypto";
 import { getDb } from "@/lib/db";
 import { getEnv } from "@/lib/env";
 import { clientIpHash } from "@/lib/ip";
@@ -20,11 +20,6 @@ const loginSchema = z.object({
 });
 
 export type LoginState = { error: string; email?: string } | undefined;
-
-function safeEqual(a: string, b: string) {
-  const digest = (value: string) => createHash("sha256").update(value).digest();
-  return timingSafeEqual(digest(a), digest(b));
-}
 
 function safeNext(next: string | undefined) {
   if (next && /^\/dashboard(\/|\?|$)/.test(next) && !next.startsWith("/dashboard/login")) return next;

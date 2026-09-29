@@ -12,7 +12,7 @@ export function Portrait() {
           src={portrait.src}
           alt={portrait.alt}
           fill
-          priority
+          preload
           sizes="(min-width: 1280px) 480px, (min-width: 1024px) 380px, 100vw"
           className="object-cover object-[center_35%]"
         />

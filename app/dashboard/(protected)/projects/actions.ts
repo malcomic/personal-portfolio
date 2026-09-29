@@ -8,14 +8,9 @@ import { getDb } from "@/lib/db";
 import { verifySession } from "@/lib/dal";
 import { getBlobToken } from "@/lib/env";
 import { Prisma } from "@/lib/generated/prisma/client";
+import { projectRowData } from "@/lib/project-row";
 import { revalidateProjects } from "@/lib/revalidate";
-import {
-  imageUrlsOf,
-  projectErrors,
-  projectInputSchema,
-  type ProjectFieldErrors,
-  type ProjectInput,
-} from "@/lib/validation/project";
+import { projectErrors, projectInputSchema, type ProjectFieldErrors } from "@/lib/validation/project";
 
 export type ProjectActionResult =
   | { ok: true; id: string; slug: string }
@@ -29,26 +24,6 @@ const DUPLICATE_SLUG = "Another project already uses this slug.";
 
 function prismaCode(error: unknown) {
   return error instanceof Prisma.PrismaClientKnownRequestError ? error.code : undefined;
-}
-
-function toRowData(input: ProjectInput) {
-  return {
-    slug: input.slug,
-    title: input.title,
-    subtitle: input.subtitle,
-    status: input.status,
-    description: input.description,
-    listDescription: input.listDescription,
-    listScreenshot: input.listScreenshot,
-    features: input.features,
-    tags: input.tags,
-    liveUrl: input.liveUrl,
-    repoUrl: input.repoUrl,
-    images: imageUrlsOf(input),
-    caseStudy: input.caseStudy,
-    featured: input.featured,
-    published: input.published,
-  };
 }
 
 function deleteBlobsLater(urls: string[]) {
@@ -85,7 +60,7 @@ export async function createProject(values: unknown): Promise<ProjectActionResul
     const db = getDb();
     const { _max } = await db.project.aggregate({ _max: { sortOrder: true } });
     const created = await db.project.create({
-      data: { ...toRowData(parsed.data), sortOrder: (_max.sortOrder ?? -1) + 1 },
+      data: { ...projectRowData(parsed.data), sortOrder: (_max.sortOrder ?? -1) + 1 },
       select: { id: true, slug: true },
     });
     refresh();
@@ -111,7 +86,7 @@ export async function updateProject(id: string, values: unknown): Promise<Projec
     const current = await db.project.findUnique({ where: { id: parsedId.data }, select: { images: true } });
     if (!current) return { ok: false, error: NOT_FOUND };
 
-    const data = toRowData(parsed.data);
+    const data = projectRowData(parsed.data);
     const updated = await db.project.update({
       where: { id: parsedId.data },
       data,

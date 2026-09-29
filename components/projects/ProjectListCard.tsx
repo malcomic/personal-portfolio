@@ -8,10 +8,10 @@ import { longestWordLength } from "@/lib/text";
 
 type ProjectListCardProps = {
   project: Project;
-  priority?: boolean;
+  preload?: boolean;
 };
 
-export function ProjectListCard({ project, priority = false }: ProjectListCardProps) {
+export function ProjectListCard({ project, preload = false }: ProjectListCardProps) {
   return (
     <Link
       href={`/projects/${project.slug}`}
@@ -54,7 +54,7 @@ export function ProjectListCard({ project, priority = false }: ProjectListCardPr
         screenshot={project.listScreenshot}
         variant="card"
         sizes="(min-width: 1024px) 576px, 100vw"
-        priority={priority}
+        preload={preload}
         className="self-start"
       />
     </Link>

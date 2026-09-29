@@ -43,3 +43,9 @@ export function getBlobToken(): string | undefined {
   const token = process.env.BLOB_READ_WRITE_TOKEN?.trim();
   return token ? token : undefined;
 }
+
+/** Undefined when unset or too short to be safe. */
+export function getRevalidateSecret(): string | undefined {
+  const secret = process.env.REVALIDATE_SECRET?.trim();
+  return secret && secret.length >= 32 ? secret : undefined;
+}

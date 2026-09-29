@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
-import { loadOgFonts, OgFrame, ogColors, ogContentType, ogSize } from "@/lib/og";
+import { loadOgFonts, loadOgPanelImage, OgFrame, ogColors, ogContentType, ogSize } from "@/lib/og";
 import { getProjectBySlug, getPublishedProjects } from "@/lib/queries/projects";
 import { longestWordLength } from "@/lib/text";
 
@@ -17,11 +17,14 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) notFound();
-  const titleSize = Math.min(96, Math.floor(1000 / longestWordLength(project.caseStudy.headline)));
+  const panelImage = await loadOgPanelImage(project.caseStudy.hero.image);
+  const textWidth = panelImage ? 700 : 1000;
+  const titleSize = Math.min(96, Math.floor(textWidth / longestWordLength(project.caseStudy.headline)));
 
   return new ImageResponse(
     (
       <OgFrame
+        panelImage={panelImage}
         badge={
           <span style={{ fontFamily: "Geist Mono", fontSize: 22, color: ogColors.muted }}>CASE STUDY</span>
         }
@@ -46,7 +49,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           </div>
         }
       >
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 18 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 18, maxWidth: textWidth }}>
           <span
             style={{
               fontFamily: "Geist Mono",
@@ -62,7 +65,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
           </span>
           <span style={{ fontFamily: "Syne", fontSize: titleSize, lineHeight: 1.05 }}>{project.caseStudy.headline}</span>
           <span style={{ fontSize: 34, color: ogColors.accent }}>{project.subtitle}</span>
-          <span style={{ fontSize: 26, color: ogColors.muted, maxWidth: 1000 }}>{project.caseStudy.tagline}</span>
+          <span style={{ fontSize: 26, color: ogColors.muted }}>{project.caseStudy.tagline}</span>
         </div>
       </OgFrame>
     ),

@@ -12,7 +12,7 @@ type ScreenshotPlaceholderProps = {
   screenshot: Screenshot;
   variant: keyof typeof ratios;
   sizes: string;
-  priority?: boolean;
+  preload?: boolean;
   className?: string;
 };
 
@@ -20,7 +20,7 @@ export function ScreenshotPlaceholder({
   screenshot,
   variant,
   sizes,
-  priority = false,
+  preload = false,
   className = "",
 }: ScreenshotPlaceholderProps) {
   const frame = `relative w-full overflow-hidden rounded-[4px] border border-border bg-surface ${ratios[variant]} ${className}`;
@@ -33,7 +33,7 @@ export function ScreenshotPlaceholder({
           alt={screenshot.caption}
           fill
           sizes={sizes}
-          priority={priority}
+          preload={preload}
           className="object-cover"
         />
       </div>

@@ -78,7 +78,7 @@ export function CaseStudyHero({ project }: { project: Project }) {
           screenshot={caseStudy.hero}
           variant="hero"
           sizes="(min-width: 1440px) 1280px, 100vw"
-          priority
+          preload
         />
       </Reveal>
     </section>

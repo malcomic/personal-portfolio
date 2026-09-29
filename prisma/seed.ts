@@ -4,6 +4,7 @@ import { PrismaClient } from "../lib/generated/prisma/client";
 import type { MessageStatus } from "../lib/generated/prisma/enums";
 import { projectTypes } from "../lib/data/contact";
 import { projects } from "./data/projects";
+import { formatSeedErrors, seedProjectRow } from "./data/toRow";
 
 loadEnvConfig(process.cwd());
 
@@ -38,29 +39,18 @@ const details = [
 const statuses: MessageStatus[] = ["NEW", "NEW", "REPLIED", "REPLIED", "ARCHIVED"];
 
 async function seedProjects() {
+  const rows = projects.map(seedProjectRow);
+  const invalid = formatSeedErrors(rows);
+  if (invalid) throw new Error(`Invalid entries in prisma/data/projects.ts:\n${invalid}`);
+
   let inserted = 0;
-  for (const [index, project] of projects.entries()) {
-    const { liveUrl, repoUrl, ...caseStudy } = project.caseStudy;
-    const exists = await db.project.findUnique({ where: { slug: project.slug }, select: { id: true } });
+  for (const [index, row] of rows.entries()) {
+    if (!row.ok) continue;
+    const exists = await db.project.findUnique({ where: { slug: row.slug }, select: { id: true } });
     await db.project.upsert({
-      where: { slug: project.slug },
+      where: { slug: row.slug },
       update: {},
-      create: {
-        slug: project.slug,
-        title: project.title,
-        subtitle: project.subtitle,
-        status: project.status,
-        description: project.description,
-        listDescription: project.listDescription,
-        listScreenshot: project.listScreenshot,
-        features: project.features,
-        tags: project.tags,
-        liveUrl: liveUrl ?? null,
-        repoUrl: repoUrl ?? null,
-        caseStudy,
-        featured: project.featured,
-        sortOrder: index,
-      },
+      create: { ...row.data, sortOrder: index },
     });
     if (!exists) inserted += 1;
   }

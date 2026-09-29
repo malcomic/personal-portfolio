@@ -40,6 +40,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# screenshot captures and saved login sessions
+/.screenshots/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -34,7 +34,7 @@ export default async function ProjectsPage() {
           {projects.map((project, index) => (
             <li key={project.slug}>
               <Reveal>
-                <ProjectListCard project={project} priority={index === 0} />
+                <ProjectListCard project={project} preload={index === 0} />
               </Reveal>
             </li>
           ))}
