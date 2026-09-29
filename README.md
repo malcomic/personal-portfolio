@@ -12,7 +12,7 @@ npm run start   # serve the production build
 npm run lint
 ```
 
-## Editing content
+## Editing contents
 
 All text lives in plain TypeScript data files, so most updates never touch a component.
 
