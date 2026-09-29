@@ -3,13 +3,9 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { PrismaClient } from "../lib/generated/prisma/client";
 import type { MessageStatus } from "../lib/generated/prisma/enums";
 import { projectTypes } from "../lib/data/contact";
+import { projects } from "./data/projects";
 
 loadEnvConfig(process.cwd());
-
-if (process.env.NODE_ENV === "production") {
-  console.error("Refusing to seed sample data with NODE_ENV=production.");
-  process.exit(1);
-}
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -41,7 +37,42 @@ const details = [
 
 const statuses: MessageStatus[] = ["NEW", "NEW", "REPLIED", "REPLIED", "ARCHIVED"];
 
-async function main() {
+async function seedProjects() {
+  let inserted = 0;
+  for (const [index, project] of projects.entries()) {
+    const { liveUrl, repoUrl, ...caseStudy } = project.caseStudy;
+    const exists = await db.project.findUnique({ where: { slug: project.slug }, select: { id: true } });
+    await db.project.upsert({
+      where: { slug: project.slug },
+      update: {},
+      create: {
+        slug: project.slug,
+        title: project.title,
+        subtitle: project.subtitle,
+        status: project.status,
+        description: project.description,
+        listDescription: project.listDescription,
+        listScreenshot: project.listScreenshot,
+        features: project.features,
+        tags: project.tags,
+        liveUrl: liveUrl ?? null,
+        repoUrl: repoUrl ?? null,
+        caseStudy,
+        featured: project.featured,
+        sortOrder: index,
+      },
+    });
+    if (!exists) inserted += 1;
+  }
+  console.log(`Projects: inserted ${inserted}, already present ${projects.length - inserted}.`);
+}
+
+async function seedMessages() {
+  if (process.env.NODE_ENV === "production") {
+    console.log("NODE_ENV=production; skipping sample messages.");
+    return;
+  }
+
   const existing = await db.message.count();
   if (existing > 0) {
     console.log(`Message table already has ${existing} rows; skipping sample messages.`);
@@ -69,6 +100,11 @@ async function main() {
 
   await db.message.createMany({ data });
   console.log(`Inserted ${data.length} sample messages.`);
+}
+
+async function main() {
+  await seedProjects();
+  await seedMessages();
 }
 
 main()

@@ -1,8 +1,9 @@
 import type { MetadataRoute } from "next";
-import { projects } from "@/lib/data/projects";
+import { getPublishedProjects } from "@/lib/queries/projects";
 import { site } from "@/lib/site";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const projects = await getPublishedProjects();
   const pages = [
     { path: "", priority: 1 },
     { path: "/about", priority: 0.8 },

@@ -36,3 +36,27 @@ model LoginAttempt {
 
   @@index([ipHash, createdAt])
 }
+
+model Project {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  title           String
+  subtitle        String
+  status          String
+  description     String
+  listDescription String
+  listScreenshot  Json
+  features        String[]
+  tags            String[]
+  liveUrl         String?
+  repoUrl         String?
+  images          String[]
+  caseStudy       Json
+  featured        Boolean  @default(false)
+  published       Boolean  @default(true)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([published, sortOrder])
+}

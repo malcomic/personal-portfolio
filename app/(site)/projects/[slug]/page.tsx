@@ -4,18 +4,17 @@ import { CaseStudyBody } from "@/components/projects/CaseStudyBody";
 import { CaseStudyHero } from "@/components/projects/CaseStudyHero";
 import { FactsStrip } from "@/components/projects/FactsStrip";
 import { ProjectPager } from "@/components/projects/ProjectPager";
-import { getAdjacentProjects, getProject, projects } from "@/lib/data/projects";
 import { pageMetadata } from "@/lib/metadata";
+import { getAdjacentProjects, getProjectBySlug, getPublishedProjects } from "@/lib/queries/projects";
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const projects = await getPublishedProjects();
   return projects.map((project) => ({ slug: project.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/projects/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = await getProjectBySlug(slug);
   if (!project) return {};
 
   return pageMetadata({
@@ -28,17 +27,17 @@ export async function generateMetadata({ params }: PageProps<"/projects/[slug]">
 
 export default async function ProjectPage({ params }: PageProps<"/projects/[slug]">) {
   const { slug } = await params;
-  const project = getProject(slug);
+  const project = await getProjectBySlug(slug);
   if (!project) notFound();
 
-  const { previous, next } = getAdjacentProjects(slug);
+  const { previous, next } = await getAdjacentProjects(slug);
 
   return (
     <>
       <CaseStudyHero project={project} />
       <FactsStrip facts={project.caseStudy.facts} />
       <CaseStudyBody caseStudy={project.caseStudy} />
-      <ProjectPager previous={previous} next={next} />
+      {previous && next && <ProjectPager previous={previous} next={next} />}
     </>
   );
 }

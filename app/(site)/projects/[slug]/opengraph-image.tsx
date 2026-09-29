@@ -1,19 +1,22 @@
+import { notFound } from "next/navigation";
 import { ImageResponse } from "next/og";
-import { getProject, projects } from "@/lib/data/projects";
 import { loadOgFonts, OgFrame, ogColors, ogContentType, ogSize } from "@/lib/og";
+import { getProjectBySlug, getPublishedProjects } from "@/lib/queries/projects";
 import { longestWordLength } from "@/lib/text";
 
 export const alt = "Case study preview";
 export const size = ogSize;
 export const contentType = ogContentType;
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const projects = await getPublishedProjects();
   return projects.map((project) => ({ slug: project.slug }));
 }
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const project = getProject(slug) ?? projects[0];
+  const project = await getProjectBySlug(slug);
+  if (!project) notFound();
   const titleSize = Math.min(96, Math.floor(1000 / longestWordLength(project.caseStudy.headline)));
 
   return new ImageResponse(

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { MessageStatusBadge } from "@/components/dashboard/MessageStatusBadge";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { projects } from "@/lib/data/projects";
 import { formatRelative } from "@/lib/format";
 import { getMessageCounts, getRecentMessages } from "@/lib/queries/messages";
+import { getProjectCount } from "@/lib/queries/projects";
 
 export const metadata: Metadata = {
   title: "Overview",
@@ -29,7 +29,11 @@ function StatCard({ label, value, href }: { label: string; value: number; href?:
 }
 
 export default async function DashboardPage() {
-  const [counts, recent] = await Promise.all([getMessageCounts(), getRecentMessages(5)]);
+  const [counts, recent, projectCount] = await Promise.all([
+    getMessageCounts(),
+    getRecentMessages(5),
+    getProjectCount(),
+  ]);
 
   return (
     <div className="flex max-w-[960px] flex-col gap-10">
@@ -38,7 +42,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="NEW MESSAGES" value={counts.NEW} href="/dashboard/messages?status=NEW" />
         <StatCard label="TOTAL MESSAGES" value={counts.ALL} href="/dashboard/messages?status=ALL" />
-        <StatCard label="PROJECTS" value={projects.length} />
+        <StatCard label="PROJECTS" value={projectCount} />
       </div>
 
       <section aria-labelledby="latest-heading" className="flex flex-col gap-4">

@@ -29,3 +29,12 @@ export function getEnv(): Env {
   cached = parsed.data;
   return cached;
 }
+
+// Static pages read the database at build time, which should not require the mail or auth secrets.
+export function getDatabaseUrl(): string {
+  const parsed = envSchema.shape.DATABASE_URL.safeParse(process.env.DATABASE_URL);
+  if (!parsed.success) {
+    throw new Error("DATABASE_URL is missing or invalid (see .env.example).");
+  }
+  return parsed.data;
+}

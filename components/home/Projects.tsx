@@ -2,14 +2,16 @@ import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Button } from "@/components/ui/Button";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { featuredProjects, projectsIntro } from "@/lib/data/projects";
+import { projectsIntro } from "@/lib/data/projects";
+import { getFeaturedProjects } from "@/lib/queries/projects";
 
-const rows = [
-  { items: featuredProjects.slice(0, 2), columns: "lg:grid-cols-[728fr_520fr]" },
-  { items: featuredProjects.slice(2, 4), columns: "lg:grid-cols-[repeat(2,minmax(0,520px))]" },
-];
+export async function Projects() {
+  const featuredProjects = await getFeaturedProjects();
+  const rows = [
+    { items: featuredProjects.slice(0, 2), columns: "lg:grid-cols-[728fr_520fr]" },
+    { items: featuredProjects.slice(2, 4), columns: "lg:grid-cols-[repeat(2,minmax(0,520px))]" },
+  ];
 
-export function Projects() {
   return (
     <section id="projects" aria-label="Projects" className="scroll-mt-16 bg-bg lg:scroll-mt-20">
       <div className="container-page flex flex-col gap-12 py-16 md:gap-16 md:py-24 lg:gap-20 lg:pt-20 lg:pb-[120px]">
