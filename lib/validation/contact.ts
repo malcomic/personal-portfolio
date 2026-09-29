@@ -1,3 +1,4 @@
+import "./zod-config";
 import { z } from "zod";
 import { projectTypes } from "@/lib/data/contact";
 

@@ -1,3 +1,4 @@
+import "./zod-config";
 import { z } from "zod";
 
 const BLOB_HOST_SUFFIX = ".public.blob.vercel-storage.com";

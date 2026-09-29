@@ -13,6 +13,11 @@ function escapeHtml(value: string) {
 }
 
 export async function sendContactAlert(message: Message) {
+  if (process.env.CONTACT_EMAILS_DISABLED === "true") {
+    console.info("Contact alert email skipped (CONTACT_EMAILS_DISABLED)", { messageId: message.id });
+    return;
+  }
+
   const sender = message.name ?? message.email;
   const rows: [string, string][] = [
     ["Name", message.name ?? "Not provided"],

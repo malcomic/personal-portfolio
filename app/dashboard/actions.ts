@@ -8,6 +8,7 @@ import { safeEqual } from "@/lib/crypto";
 import { getDb } from "@/lib/db";
 import { getEnv } from "@/lib/env";
 import { clientIpHash } from "@/lib/ip";
+import { safeNext } from "@/lib/redirects";
 import { createSession, deleteSession } from "@/lib/session";
 
 const MAX_FAILED_ATTEMPTS = 5;
@@ -20,11 +21,6 @@ const loginSchema = z.object({
 });
 
 export type LoginState = { error: string; email?: string } | undefined;
-
-function safeNext(next: string | undefined) {
-  if (next && /^\/dashboard(\/|\?|$)/.test(next) && !next.startsWith("/dashboard/login")) return next;
-  return "/dashboard";
-}
 
 export async function loginAction(_previous: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));

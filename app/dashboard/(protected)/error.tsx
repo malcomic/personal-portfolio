@@ -14,6 +14,7 @@ export default function DashboardError({ error, retry }: { error: Error & { dige
       <p className="text-[14px] leading-[1.6] text-muted">
         The database may be unreachable. Check your connection settings, then try again.
       </p>
+      {error.digest && <p className="font-mono text-[12px] text-muted">Error reference: {error.digest}</p>}
       <ActionButton variant="primary" onClick={() => retry()}>
         Retry
       </ActionButton>

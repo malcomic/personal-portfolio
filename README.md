@@ -10,7 +10,12 @@ npm run dev     # http://localhost:3000
 npm run build   # production build
 npm run start   # serve the production build
 npm run lint
+npm run typecheck
+npm test        # unit tests
+npm run test:e2e  # end-to-end tests (needs a Neon test branch, see docs/testing.md)
 ```
+
+Testing and CI setup: [docs/testing.md](docs/testing.md).
 
 ## Editing content
 
