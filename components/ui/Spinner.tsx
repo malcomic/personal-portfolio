@@ -2,7 +2,7 @@ export function Spinner() {
   return (
     <span
       aria-hidden
-      className="size-4 animate-spin rounded-full border-2 border-white/40 border-t-white motion-reduce:animate-none"
+      className="size-4 shrink-0 animate-spin rounded-full border-2 border-current/30 border-t-current motion-reduce:animate-none"
     />
   );
 }

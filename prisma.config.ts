@@ -5,7 +5,7 @@ loadEnvConfig(process.cwd());
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  migrations: { path: "prisma/migrations" },
+  migrations: { path: "prisma/migrations", seed: "tsx prisma/seed.ts" },
   // Optional so `prisma generate` works on installs without database credentials.
   datasource: { url: process.env.DIRECT_URL },
 });
